@@ -16,10 +16,8 @@ class RentaLayout(BoxLayout):
         super(RentaLayout, self).__init__(**kwargs)
         self.orientation = "vertical"
 
-        header_widget = BoxLayout(orientation="horizontal")
         self.header_label = Label(text="Výpocet renty AČR")
-        header_widget.add_widget(self.header_label)
-        self.add_widget(header_widget)
+        self.add_widget(self.header_label)
 
         rank_widget = BoxLayout(orientation="horizontal")
         self.rank_label = Label(text="Vaše hodnost")
@@ -42,47 +40,38 @@ class RentaLayout(BoxLayout):
         bonus_widget.add_widget(self.bonus_input)
         self.add_widget(bonus_widget)
 
-        button_widget = BoxLayout(orientation="horizontal")
-        self.count_button = Button(text="Spočítat")
-        button_widget.add_widget(self.count_button)
-        self.add_widget(button_widget)
+        self.count_button = Button(text="Spočítat", on_press=self.count)
+        self.add_widget(self.count_button)
 
-        result_widget = BoxLayout(orientation="horizontal")
         self.result_label = Label(text="Vaše měsíční renta je: ")
-        result_widget.add_widget(self.result_label)
-        self.add_widget(result_widget)
+        self.add_widget(self.result_label)
 
-        info_widget = BoxLayout(orientation="horizontal")
         self.info_label = Label(text="")
-        info_widget.add_widget(self.info_label)
-        self.add_widget(info_widget)
+        self.add_widget(self.info_label)
 
-        footer_widget = BoxLayout(orientation="horizontal")
         self.footer_label = Label(text="Copyright © 2023 Karel Minarcik")
-        footer_widget.add_widget(self.footer_label)
-        self.add_widget(footer_widget)
+        self.add_widget(self.footer_label)
 
-    def get_month_salary(self, *args):
-        rank = df["Hodnost"].values.tolist()
-        rank = [el.replace('\xa0', '') for el in rank]
-        for one_rank in rank:
+    def count(self, *args):
+        self.rank = df["Hodnost"].values.tolist()
+        self.rank = [el.replace('\xa0', '') for el in self.rank]
+        for one_rank in self.rank:
             if one_rank == self.combobox.text:
-                return df.iloc[(rank.index(one_rank)), 1]
-
-    def get_percentages(self, *args):
-        age = df_2["Roky"].values.tolist()
-        for one_age in age:
-            if one_age == self.combobox2.text:
-                return df_2.iloc[(age.index(one_age)), 1]
-
-    def bonus_amount(self, *args):
-        bonus = self.bonus_input.text
+                salary = df.iloc[(self.rank.index(one_rank)), 1]
+                print(salary)
+        self.age = df_2["Roky"].values.tolist()
+        for one_age in self.age:
+            if one_age == int(self.combobox2.text):
+                percentage = df_2.iloc[(self.age.index(one_age)), 1]
+                print(percentage)
+        self.bonus = self.bonus_input.text
         try:
-            bonus = float(bonus.replace(",", ".")) * 0.01
-            return bonus
+            self.bonus = float(self.bonus.replace(",", ".")) * 0.01
+            print(self.bonus)
         except ValueError:
-            self.info_widget.text= "Zadejte prosím číslo. Desetinné místo oddělte tečkou."
-            return 0
+            self.info_label.text = "Zadejte prosím číslo. Desetinné místo oddělte tečkou. Ve vysledku nejsou zahrnuta procenta výkonnostního příplatku."
+            self.bonus = 0
+        self.result_label.text = f"Vaše měsíční renta je {(round((salary + (salary * self.bonus)) * percentage))} Kč."
 
 
 class RentaApp(App):
